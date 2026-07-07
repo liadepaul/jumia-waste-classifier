@@ -216,3 +216,34 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# Dataset
+data/raw/
+
+# Trained models
+*.h5
+*.keras
+*.pt
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
