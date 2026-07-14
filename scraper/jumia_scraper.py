@@ -77,7 +77,7 @@ def search_jumia(keyword, max_results=5, timeout=10):
 
 if __name__ == "__main__":
     # Quelques tests rapides
-    for mot_cle in ["telephone", "shampooing", "xyzxyzxyz123"]:
+    for mot_cle in ["bouteille plastique", "bouteille verre", "carton", "pile", "smartphone", "journal", "boite de conserve", "pot de confiture"]:
         print(f"\n=== Recherche: {mot_cle} ===")
         results = search_jumia(mot_cle)
         for r in results:
