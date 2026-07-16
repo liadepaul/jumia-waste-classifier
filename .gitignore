@@ -234,7 +234,7 @@ venv/
 .vscode/
 
 # Dataset
-data/raw/
+data/
 
 # Trained models
 *.h5
