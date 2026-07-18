@@ -84,7 +84,7 @@ base_model = tf.keras.applications.MobileNetV2(
 base_model.trainable = False  # on gele le reseau pre-entraine pour cette baseline
 
 inputs = tf.keras.Input(shape=TAILLE_IMAGE + (3,))
-x = tf.keras.applications.mobilenet_v2.preprocess_input(inputs)  # normalisation attendue par MobileNetV2
+x = layers.Rescaling(scale=1./127.5, offset=-1, name="preprocessing")(inputs)
 x = base_model(x, training=False)
 x = layers.GlobalAveragePooling2D()(x)
 x = layers.Dropout(0.3)(x)   # limite le sur-apprentissage
