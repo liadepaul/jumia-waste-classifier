@@ -84,7 +84,15 @@ base_model = tf.keras.applications.MobileNetV2(
 base_model.trainable = False  # on gele le reseau pre-entraine pour cette baseline
 
 inputs = tf.keras.Input(shape=TAILLE_IMAGE + (3,))
-x = layers.Rescaling(scale=1./127.5, offset=-1, name="preprocessing")(inputs)
+# Data augmentation : appliquee uniquement pendant l'entrainement
+data_augmentation = tf.keras.Sequential([
+    layers.RandomFlip("horizontal"),
+    layers.RandomRotation(0.1),
+    layers.RandomZoom(0.1),
+    layers.RandomContrast(0.1),
+], name="augmentation")
+x = data_augmentation(inputs)
+x = layers.Rescaling(scale=1./127.5, offset=-1, name="preprocessing")(x)
 x = base_model(x, training=False)
 x = layers.GlobalAveragePooling2D()(x)
 x = layers.Dropout(0.3)(x)   # limite le sur-apprentissage
@@ -103,6 +111,9 @@ model.summary()
 # ---------------------------------------------------------
 # 5. Entrainement
 # ---------------------------------------------------------
+# ---------------------------------------------------------
+# 5a. Premiere phase : tete gelee (comme la baseline)
+# ---------------------------------------------------------
 callbacks = [
     tf.keras.callbacks.EarlyStopping(
         monitor="val_accuracy", patience=5, restore_best_weights=True
@@ -112,7 +123,8 @@ callbacks = [
     ),
 ]
 
-historique = model.fit(
+print("\n=== PHASE 1 : entrainement tete gelee ===")
+historique_1 = model.fit(
     train_ds,
     validation_data=val_ds,
     epochs=EPOCHS,
@@ -121,9 +133,56 @@ historique = model.fit(
 )
 
 # ---------------------------------------------------------
+# 5b. Deuxieme phase : fine-tuning des dernieres couches
+# ---------------------------------------------------------
+print("\n=== PHASE 2 : fine-tuning des dernieres couches de MobileNetV2 ===")
+
+base_model.trainable = True
+# On ne degele que les 30 dernieres couches (les plus "specifiques"),
+# les premieres couches (formes/textures generiques) restent gelees
+for couche in base_model.layers[:-30]:
+    couche.trainable = False
+
+meilleur_val_acc_phase1 = max(historique_1.history["val_accuracy"])
+print(f"Meilleure val_accuracy phase 1 : {meilleur_val_acc_phase1:.4f}")
+
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),  # taux tres faible !
+    loss="categorical_crossentropy",
+    metrics=["accuracy"],
+)
+
+# Nouveaux callbacks : ModelCheckpoint sait desormais qu'il doit battre
+# le score de la phase 1 pour ecraser le fichier .h5, pas juste ameliorer
+# a partir de zero
+callbacks_finetuning = [
+    tf.keras.callbacks.EarlyStopping(
+        monitor="val_accuracy", patience=5, restore_best_weights=True
+    ),
+    tf.keras.callbacks.ModelCheckpoint(
+        "model/modele_eco_sort.h5", monitor="val_accuracy", save_best_only=True,
+        initial_value_threshold=meilleur_val_acc_phase1
+    ),
+]
+
+EPOCHS_FINETUNING = 15
+historique_2 = model.fit(
+    train_ds,
+    validation_data=val_ds,
+    epochs=EPOCHS_FINETUNING,
+    class_weight=class_weight,
+    callbacks=callbacks_finetuning,
+)
+
+# Fusionne les historiques des 2 phases pour les graphiques
+historique = {
+    k: historique_1.history[k] + historique_2.history[k]
+    for k in historique_1.history
+}
+
+# ---------------------------------------------------------
 # 6. Sauvegarde de l'historique (utile pour les graphiques du rapport)
 # ---------------------------------------------------------
 with open("model/historique_entrainement.json", "w") as f:
-    json.dump(historique.history, f)
-
+    json.dump(historique, f)
 print("\nEntrainement termine. Modele sauvegarde dans model/modele_eco_sort.h5")
