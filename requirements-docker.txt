@@ -1,0 +1,7 @@
+beautifulsoup4==4.12.3
+lxml==5.2.2
+numpy==1.26.4
+pillow==10.4.0
+requests==2.32.3
+streamlit==1.36.0
+tensorflow-cpu==2.16.1
