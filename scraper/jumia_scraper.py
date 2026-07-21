@@ -40,17 +40,13 @@ def chercher_produits(mot_cle, max_results=5, timeout=10):
         response = requests.get(url, headers=HEADERS, timeout=timeout)
         response.raise_for_status()  # lève une erreur si status >= 400
     except requests.exceptions.Timeout:
-        print("Erreur: le site Jumia met trop de temps à répondre.")
-        return []
+        raise ScrapingError("Le site Jumia met trop de temps à répondre.")
     except requests.exceptions.ConnectionError:
-        print("Erreur: impossible de se connecter à Jumia (vérifie ta connexion internet).")
-        return []
+        raise ScrapingError("Impossible de se connecter à Jumia (vérifie ta connexion internet).")
     except requests.exceptions.HTTPError as e:
-        print(f"Erreur HTTP: {e}")
-        return []
+        raise ScrapingError(f"Erreur HTTP renvoyée par Jumia: {e}")
     except requests.exceptions.RequestException as e:
-        print(f"Erreur inattendue lors de la requête: {e}")
-        return []
+        raise ScrapingError(f"Erreur inattendue lors de la requête vers Jumia: {e}")
 
     soup = BeautifulSoup(response.text, "lxml")
     products = soup.select("article.prd")
