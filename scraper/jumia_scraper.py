@@ -2,6 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote
 
+
+class ScrapingError(Exception):
+    """Levée en cas d'erreur réseau ou de scraping sur Jumia."""
+    pass
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
@@ -10,19 +15,26 @@ HEADERS = {
 BASE_URL = "https://www.jumia.ci/catalog/?q="
 
 
-def search_jumia(keyword, max_results=5, timeout=10):
+def chercher_produits(mot_cle, max_results=5, timeout=10):
     """
     Recherche un mot-clé sur Jumia et retourne une liste de produits.
 
     Retourne toujours une liste (vide en cas d'échec ou d'absence de résultat),
-    jamais une exception non gérée.
+    ni exception non gérée (sauf ScrapingError volontairement levée).
+
+    LIMITE CONNUE : la clé "categorie_jumia" vaut toujours None. Jumia génère
+    cette information via JavaScript (Google Tag Manager), donc invisible
+    pour un scraping HTML brut (requests+BeautifulSoup). Vérifié le : aucune
+    trace ni dans les attributs data-ga4-*, ni dans le JSON-LD de la page.
+    La détection D3E doit donc reposer uniquement sur MOTS_CLES_D3E (nom du
+    produit), comme prévu en filet de sécurité dans le contrat d'interface.
     """
-    if not keyword or not keyword.strip():
+    if not mot_cle or not mot_cle.strip():
         print("Erreur: mot-clé vide.")
         return []
 
-    encoded_keyword = quote(keyword.strip())
-    url = f"{BASE_URL}{encoded_keyword}"
+    encoded_mot_cle = quote(mot_cle.strip())
+    url = f"{BASE_URL}{encoded_mot_cle}"
 
     try:
         response = requests.get(url, headers=HEADERS, timeout=timeout)
@@ -44,7 +56,7 @@ def search_jumia(keyword, max_results=5, timeout=10):
     products = soup.select("article.prd")
 
     if not products:
-        print(f"Aucun produit trouvé pour '{keyword}'.")
+        print(f"Aucun produit trouvé pour '{mot_cle}'.")
         return []
 
     results = []
@@ -53,6 +65,7 @@ def search_jumia(keyword, max_results=5, timeout=10):
         price_tag = product.select_one("div.prc")
         img_tag = product.select_one("img")
         link_tag = product.select_one("a.core")
+        category_tag = link_tag.get("data-ga4-item-category") if link_tag else None
 
         name = name_tag.get_text(strip=True) if name_tag else "Nom inconnu"
         price = price_tag.get_text(strip=True) if price_tag else "Prix non disponible"
@@ -66,10 +79,11 @@ def search_jumia(keyword, max_results=5, timeout=10):
             link = "https://www.jumia.ci" + link
 
         results.append({
-            "name": name,
-            "price": price,
-            "image": image,
-            "link": link
+            "nom": name,
+            "prix": price,
+            "image_url": image,
+            "lien": link,
+            "categorie_jumia": category_tag,
         })
 
     return results
@@ -79,6 +93,6 @@ if __name__ == "__main__":
     # Quelques tests rapides
     for mot_cle in ["bouteille plastique", "bouteille verre", "carton", "pile", "smartphone", "journal", "boite de conserve", "pot de confiture"]:
         print(f"\n=== Recherche: {mot_cle} ===")
-        results = search_jumia(mot_cle)
+        results = chercher_produits(mot_cle)
         for r in results:
             print(r)
