@@ -234,10 +234,11 @@ venv/
 .vscode/
 
 # Dataset
-data/raw/
+data/
 
 # Trained models
 *.h5
+!model/modele_eco_sort.h5
 *.keras
 *.pt
 
