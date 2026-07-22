@@ -1,18 +1,6 @@
 services:
   ecosort:
-    build:
-      context: .
-    container_name: ecosort-search
-    restart: unless-stopped
+    build: .
     ports:
-      - "8501:8501"
-    environment:
-      - JUMIA_BASE_URL=https://www.jumia.ci
-      - COINAFRIQUE_BASE_URL=https://ci.coinafrique.com
-      - ECOSORT_MODEL_PATH=/app/models/modele_eco_sort.h5
-      - TF_ENABLE_ONEDNN_OPTS=0
-      - TF_CPP_MIN_LOG_LEVEL=2
-      - OMP_NUM_THREADS=1
-      - TF_NUM_INTRAOP_THREADS=1
-      - TF_NUM_INTEROP_THREADS=1
-      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+      - "5000:5000"
+    restart: unless-stopped

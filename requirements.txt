@@ -1,0 +1,6 @@
+flask==3.0.3
+gunicorn==22.0.0
+
+# --- Dependances des autres parties du projet (a completer/ajuster par A et B) ---
+# tensorflow / keras / pillow / numpy   -> pour model/predict.py (Etudiant A)
+# requests / beautifulsoup4             -> pour scraper/jumia_scraper.py (Etudiant B)

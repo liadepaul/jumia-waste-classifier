@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Consigne de tri - EcoSort-Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+</head>
+<body>
+    <main class="carte">
+        <svg class="fond-pointille" width="100%" height="100%">
+            <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1.2" fill="#57603F"></circle>
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#dots)"></rect>
+        </svg>
+
+        <div class="contenu">
+            <div class="entete">
+                <a href="{{ url_for('accueil') }}" class="bouton-retour">
+                    <i class="ti ti-arrow-left" style="color:#1B2420;font-size:16px;"></i>
+                </a>
+                <h1 class="titre-page">Consigne de tri</h1>
+            </div>
+
+            <div class="panneau-verdict" style="background:{{ affichage.hex }};">
+                <div class="icone-verdict">
+                    <i class="ti ti-recycle" style="color:{{ affichage.texte_hex | default('#3D3000') }};font-size:30px;"></i>
+                </div>
+                <p class="nom-produit-verdict" style="color:{{ affichage.texte_hex | default('#3D3000') }};">{{ produit.nom }}</p>
+                <p class="label-verdict" style="color:{{ affichage.texte_fort_hex | default('#3D3000') }};">{{ affichage.bac_court }}</p>
+                <p class="explication-verdict" style="color:{{ affichage.texte_hex | default('#3D3000') }};">{{ affichage.explication }}</p>
+                {% if confiance %}
+                <div class="badge-confiance" style="color:{{ affichage.texte_fort_hex | default('#3D3000') }};">
+                    Confiance IA : {{ (confiance * 100) | round(1) }}%
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="actions-verdict">
+                <button type="button" class="action-verdict" id="btn-partager"
+                        data-texte="{{ produit.nom }} va dans le {{ affichage.bac_court }} ({{ affichage.explication }}) - verifie avec EcoSort-Search">
+                    <i class="ti ti-share"></i>
+                    <p>Partager</p>
+                </button>
+                <a href="{{ url_for('accueil') }}" class="action-verdict">
+                    <i class="ti ti-refresh"></i>
+                    <p>Nouvelle recherche</p>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Bouton Partager : utilise le partage natif du telephone/navigateur si disponible,
+        // sinon copie le texte dans le presse-papier
+        document.getElementById('btn-partager').addEventListener('click', async () => {
+            const texte = document.getElementById('btn-partager').dataset.texte;
+            if (navigator.share) {
+                try {
+                    await navigator.share({ text: texte, title: 'EcoSort-Search' });
+                } catch (e) {
+                    // l'utilisateur a annule le partage, on ne fait rien
+                }
+            } else {
+                await navigator.clipboard.writeText(texte);
+                alert('Copie dans le presse-papier !');
+            }
+        });
+    </script>
+</body>
+</html>
