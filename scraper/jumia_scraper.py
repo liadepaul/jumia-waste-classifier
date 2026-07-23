@@ -1,157 +1,242 @@
+from urllib.parse import quote, urljoin
+
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import quote
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
-}
 
 BASE_URL = "https://www.jumia.ci/catalog/?q="
+DOMAINE_JUMIA = "https://www.jumia.ci"
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0 Safari/537.36"
+    ),
+    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
+}
+
+MARQUEURS_BLOCAGE = (
+    "captcha",
+    "access denied",
+    "attention required",
+    "cloudflare",
+    "are you a robot",
+    "verify you are human",
+    "vérifiez que vous êtes humain",
+    "verifiez que vous etes humain",
+)
+
+MARQUEURS_AUCUN_RESULTAT = (
+    "aucun résultat",
+    "aucun resultat",
+    "aucun produit",
+    "0 résultat",
+    "0 resultat",
+    "no results",
+    "no product found",
+    "we couldn't find",
+    "nous n'avons trouvé aucun",
+    "nous n'avons trouve aucun",
+)
 
 
 class ScrapingError(Exception):
     """
-    Levee en cas d'erreur reseau (timeout, connexion impossible, HTTP >= 400)
-    ou si la structure HTML de Jumia a change au point de ne plus pouvoir
-    parser la page. Le module app.py doit intercepter cette exception et
-    afficher un message d'erreur propre a l'utilisateur, sans planter.
+    Erreur contrôlée produite pendant l'interrogation ou
+    l'analyse d'une page Jumia.
     """
-    pass
 
 
-MARQUEURS_BLOCAGE = [
-    "captcha", "access denied", "attention required",
-    "cloudflare", "are you a robot", "verifiez que vous",
-]
-
-
-def _verifier_page_valide(html_brut: str, soup: BeautifulSoup) -> None:
+def _verifier_page_sans_produits(
+    html_brut: str,
+    soup: BeautifulSoup,
+) -> None:
     """
-    Appelee uniquement quand aucun article.prd n'est trouve.
-    Distingue une vraie absence de resultats d'un blocage ou d'un
-    changement de structure HTML, en levant ScrapingError si la page
-    ne ressemble pas a une page Jumia normale.
+    Analyse une page dans laquelle aucun bloc produit n'a été trouvé.
+
+    La fonction :
+    - lève ScrapingError en cas de blocage ou CAPTCHA ;
+    - ne lève rien lorsqu'un message d'absence de résultats est détecté ;
+    - lève ScrapingError si la structure de la page n'est plus reconnue.
     """
-    texte_minuscule = html_brut.lower()
+    html_minuscule = html_brut.lower()
+    texte_visible = soup.get_text(" ", strip=True).lower()
 
     for marqueur in MARQUEURS_BLOCAGE:
-        if marqueur in texte_minuscule:
+        if marqueur in html_minuscule:
             raise ScrapingError(
-                f"Jumia semble bloquer la requete (marqueur detecte : '{marqueur}')."
+                "Jumia semble bloquer la requête automatisée "
+                f"(marqueur détecté : {marqueur!r})."
             )
 
-    # Un element stable de la page catalogue, present que la recherche
-    # ait des resultats ou non. S'il manque aussi, la structure a change
-    # ou la page recue n'est pas une page de resultats valide.
-    page_reconnue = (
-        soup.select_one("div.catalog") is not None
-        or soup.select_one("#jm-content") is not None
-        or "jumia" in texte_minuscule
+    for marqueur in MARQUEURS_AUCUN_RESULTAT:
+        if marqueur in texte_visible:
+            return
+
+    raise ScrapingError(
+        "Aucun bloc produit n'a été détecté et aucun message "
+        "d'absence de résultats n'a été reconnu. La structure HTML "
+        "de Jumia a peut-être changé."
     )
 
-    if not page_reconnue:
-        raise ScrapingError(
-            "Page Jumia non reconnue : ni produits, ni conteneur catalogue "
-            "attendu. La structure du site a peut-etre change."
-        )
 
-
-def chercher_produits(mot_cle: str, max_resultats: int = 5, timeout: int = 10) -> list[dict]:
+def chercher_produits(
+    mot_cle: str,
+    max_resultats: int = 5,
+    timeout: int = 10,
+) -> list[dict]:
     """
-    Interroge Jumia avec le mot-cle fourni et renvoie 3 a 5 resultats.
+    Recherche des produits sur Jumia Côte d'Ivoire.
 
-    Retour :
-    [
-        {
-            "nom": "Shampooing Head & Shoulders 400ml",
-            "image_url": "https://...",
-            "prix": "2500 FCFA",
-            "lien": "https://www.jumia.ci/...",
-            "categorie_jumia": None  # non extrait de la page de resultats, voir note ci-dessous
-        },
-        ...
-    ]
+    Paramètres
+    ----------
+    mot_cle:
+        Mot ou expression à rechercher.
+    max_resultats:
+        Nombre maximal de produits à renvoyer. La valeur est limitée à 5.
+    timeout:
+        Délai maximal de la requête HTTP, en secondes.
 
-    Si aucun resultat : renvoie une liste vide [].
-    En cas d'erreur reseau/scraping : leve ScrapingError plutot que de planter.
+    Retour
+    ------
+    Une liste de dictionnaires respectant le contrat :
 
-    Note sur "categorie_jumia" : ce champ n'est pas directement disponible
-    dans le HTML de la page de resultats de recherche Jumia (contrairement
-    au nom/prix/image/lien). Il reste a None ici ; la detection D3E cote
-    interface (est_electronique) se base alors uniquement sur les mots-cles
-    presents dans le nom du produit, ce qui a ete valide comme suffisant.
+    {
+        "nom": "...",
+        "image_url": "https://...",
+        "prix": "...",
+        "lien": "https://...",
+        "categorie_jumia": None,
+    }
+
+    Une recherche vide ou une véritable absence de résultats renvoie [].
+    Une erreur réseau, HTTP, un blocage ou une structure HTML non reconnue
+    lève ScrapingError.
     """
-    if not mot_cle or not mot_cle.strip():
+    if not isinstance(mot_cle, str) or not mot_cle.strip():
         return []
+
+    try:
+        limite = int(max_resultats)
+    except (TypeError, ValueError):
+        limite = 5
+
+    limite = max(1, min(limite, 5))
 
     mot_cle_encode = quote(mot_cle.strip())
     url = f"{BASE_URL}{mot_cle_encode}"
 
     try:
-        response = requests.get(url, headers=HEADERS, timeout=timeout)
-        response.raise_for_status()  # leve une erreur si status >= 400
-    except requests.exceptions.Timeout:
-        raise ScrapingError("Le site Jumia met trop de temps a repondre (timeout).")
-    except requests.exceptions.ConnectionError:
-        raise ScrapingError("Impossible de se connecter a Jumia (verifie la connexion internet).")
-    except requests.exceptions.HTTPError as e:
-        raise ScrapingError(f"Erreur HTTP lors de la requete Jumia : {e}")
-    except requests.exceptions.RequestException as e:
-        raise ScrapingError(f"Erreur inattendue lors de la requete Jumia : {e}")
+        response = requests.get(
+            url,
+            headers=HEADERS,
+            timeout=timeout,
+        )
+        response.raise_for_status()
+
+    except requests.exceptions.Timeout as erreur:
+        raise ScrapingError(
+            "Le site Jumia met trop de temps à répondre."
+        ) from erreur
+
+    except requests.exceptions.ConnectionError as erreur:
+        raise ScrapingError(
+            "Impossible de se connecter à Jumia."
+        ) from erreur
+
+    except requests.exceptions.HTTPError as erreur:
+        raise ScrapingError(
+            f"Jumia a renvoyé une erreur HTTP : {erreur}"
+        ) from erreur
+
+    except requests.exceptions.RequestException as erreur:
+        raise ScrapingError(
+            f"Erreur pendant la requête Jumia : {erreur}"
+        ) from erreur
 
     try:
         soup = BeautifulSoup(response.text, "lxml")
-        produits_html = soup.select("article.prd")
-    except Exception as e:
-        raise ScrapingError(f"Erreur lors du parsing de la page Jumia (structure HTML modifiee ?) : {e}")
+    except Exception as erreur:
+        raise ScrapingError(
+            f"Impossible d'analyser la page Jumia : {erreur}"
+        ) from erreur
+
+    produits_html = soup.select("article.prd")
 
     if not produits_html:
-        _verifier_page_valide(response.text, soup)
+        _verifier_page_sans_produits(response.text, soup)
         return []
 
     resultats = []
-    for produit in produits_html[:max_resultats]:
-        name_tag = produit.select_one("h3.name")
-        price_tag = produit.select_one("div.prc")
-        img_tag = produit.select_one("img")
-        link_tag = produit.select_one("a.core")
 
-        nom = name_tag.get_text(strip=True) if name_tag else "Nom inconnu"
-        prix = price_tag.get_text(strip=True) if price_tag else "Prix non disponible"
+    for produit in produits_html[:limite]:
+        nom_tag = produit.select_one("h3.name")
+        prix_tag = produit.select_one("div.prc")
+        image_tag = produit.select_one("img")
+        lien_tag = produit.select_one("a.core")
+
+        nom = (
+            nom_tag.get_text(" ", strip=True)
+            if nom_tag
+            else "Nom inconnu"
+        )
+
+        prix = (
+            prix_tag.get_text(" ", strip=True)
+            if prix_tag
+            else "Prix non disponible"
+        )
 
         image_url = None
-        if img_tag:
-            image_url = img_tag.get("data-src") or img_tag.get("src")
+        if image_tag:
+            image_url = (
+                image_tag.get("data-src")
+                or image_tag.get("data-lazy-src")
+                or image_tag.get("src")
+            )
 
-        lien = link_tag.get("href") if link_tag else None
-        if lien and lien.startswith("/"):
-            lien = "https://www.jumia.ci" + lien
+            if image_url:
+                image_url = urljoin(DOMAINE_JUMIA, image_url)
 
-        resultats.append({
-            "nom": nom,
-            "prix": prix,
-            "image_url": image_url,
-            "lien": lien,
-            "categorie_jumia": None,
-        })
+        lien = lien_tag.get("href") if lien_tag else None
+        if lien:
+            lien = urljoin(DOMAINE_JUMIA, lien)
+
+        resultats.append(
+            {
+                "nom": nom,
+                "image_url": image_url,
+                "prix": prix,
+                "lien": lien,
+                "categorie_jumia": None,
+            }
+        )
 
     return resultats
 
 
 if __name__ == "__main__":
-    # Quelques tests manuels rapides
     mots_cles_test = [
-        "bouteille plastique", "bouteille verre", "carton", "pile",
-        "smartphone", "journal", "boite de conserve", "pot de confiture",
+        "bouteille",
+        "smartphone",
+        "cahier",
+        "carton",
+        "azertyproduitinexistant123456",
     ]
-    for mot_cle in mots_cles_test:
-        print(f"\n=== Recherche : {mot_cle} ===")
+
+    for mot_cle_test in mots_cles_test:
+        print(f"\n=== Recherche : {mot_cle_test} ===")
+
         try:
-            resultats = chercher_produits(mot_cle)
-            if not resultats:
-                print("  Aucun resultat.")
-            for r in resultats:
-                print(" ", r)
-        except ScrapingError as e:
-            print(f"  ScrapingError : {e}")
+            produits = chercher_produits(mot_cle_test)
+
+            if not produits:
+                print("Aucun résultat.")
+                continue
+
+            for produit in produits:
+                print(produit)
+
+        except ScrapingError as erreur:
+            print(f"ScrapingError : {erreur}")
