@@ -248,3 +248,5 @@ data/
 # OS
 .DS_Store
 Thumbs.db
+# Images temporaires téléchargées par Flask
+app/static/tmp/

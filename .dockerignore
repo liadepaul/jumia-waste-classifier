@@ -21,3 +21,4 @@ reports/*.log
 .env.*
 .DS_Store
 Thumbs.db
+app/static/tmp/
