@@ -20,6 +20,43 @@ class ScrapingError(Exception):
     pass
 
 
+MARQUEURS_BLOCAGE = [
+    "captcha", "access denied", "attention required",
+    "cloudflare", "are you a robot", "verifiez que vous",
+]
+
+
+def _verifier_page_valide(html_brut: str, soup: BeautifulSoup) -> None:
+    """
+    Appelee uniquement quand aucun article.prd n'est trouve.
+    Distingue une vraie absence de resultats d'un blocage ou d'un
+    changement de structure HTML, en levant ScrapingError si la page
+    ne ressemble pas a une page Jumia normale.
+    """
+    texte_minuscule = html_brut.lower()
+
+    for marqueur in MARQUEURS_BLOCAGE:
+        if marqueur in texte_minuscule:
+            raise ScrapingError(
+                f"Jumia semble bloquer la requete (marqueur detecte : '{marqueur}')."
+            )
+
+    # Un element stable de la page catalogue, present que la recherche
+    # ait des resultats ou non. S'il manque aussi, la structure a change
+    # ou la page recue n'est pas une page de resultats valide.
+    page_reconnue = (
+        soup.select_one("div.catalog") is not None
+        or soup.select_one("#jm-content") is not None
+        or "jumia" in texte_minuscule
+    )
+
+    if not page_reconnue:
+        raise ScrapingError(
+            "Page Jumia non reconnue : ni produits, ni conteneur catalogue "
+            "attendu. La structure du site a peut-etre change."
+        )
+
+
 def chercher_produits(mot_cle: str, max_resultats: int = 5, timeout: int = 10) -> list[dict]:
     """
     Interroge Jumia avec le mot-cle fourni et renvoie 3 a 5 resultats.
@@ -70,6 +107,7 @@ def chercher_produits(mot_cle: str, max_resultats: int = 5, timeout: int = 10) -
         raise ScrapingError(f"Erreur lors du parsing de la page Jumia (structure HTML modifiee ?) : {e}")
 
     if not produits_html:
+        _verifier_page_valide(response.text, soup)
         return []
 
     resultats = []
