@@ -1,0 +1,13 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+data/
+notebooks/
+reports/
+tests/
+docs/
+screenshots/
+app/static/tmp/

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultats - EcoSort-Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+</head>
+<body>
+    <main class="carte">
+        <svg class="fond-pointille" width="100%" height="100%">
+            <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1.2" fill="#57603F"></circle>
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#dots)"></rect>
+        </svg>
+
+        <img class="ampoule-deco" style="top:12px;right:12px;width:58px;"
+             src="{{ url_for('static', filename='images/ampoule-olive.jpg') }}" alt="">
+
+        <div class="contenu">
+            <div class="entete">
+                <a href="{{ url_for('accueil') }}" class="bouton-retour">
+                    <i class="ti ti-arrow-left" style="color:#1B2420;font-size:16px;"></i>
+                </a>
+                <h1 class="titre-page">Resultats</h1>
+            </div>
+            <p class="sous-entete">pour <strong>"{{ mot_cle }}"</strong>{% if produits %} - {{ produits|length }} produits trouves{% endif %}</p>
+
+            {% if erreur %}
+                <div class="message-erreur">{{ erreur }}</div>
+            {% endif %}
+
+            {% if produits %}
+            <div class="liste-produits">
+                {% for produit in produits %}
+                <form action="{{ url_for('verdict') }}" method="post">
+                    <input type="hidden" name="nom" value="{{ produit.nom }}">
+                    <input type="hidden" name="image_url" value="{{ produit.image_url }}">
+                    <input type="hidden" name="categorie_jumia" value="{{ produit.categorie_jumia or '' }}">
+                    <button type="submit" class="carte-produit">
+                        <div class="vignette-produit">
+                            {% if produit.image_url %}
+                            <img src="{{ produit.image_url }}" alt="{{ produit.nom }}">
+                            {% endif %}
+                        </div>
+                        <div class="info-produit">
+                            <p class="nom-produit">{{ produit.nom }}</p>
+                            <p class="prix-produit">{{ produit.prix }} - Jumia</p>
+                        </div>
+                        <div class="fleche-produit">
+                            <i class="ti ti-chevron-right" style="color:#5C4A00;font-size:14px;"></i>
+                        </div>
+                    </button>
+                </form>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>
