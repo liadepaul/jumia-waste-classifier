@@ -3,6 +3,7 @@ import os
 import sys
 import uuid
 import urllib.request
+import requests
 
 # Permet d'importer les modules du dossier model/ et scraper/
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -98,7 +99,16 @@ def telecharger_image(url: str) -> str:
     os.makedirs(dossier_tmp, exist_ok=True)
     nom_fichier = f"produit_{uuid.uuid4().hex}.jpg"
     chemin_local = os.path.join(dossier_tmp, nom_fichier)
-    urllib.request.urlretrieve(url, chemin_local)
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+    }
+    reponse = requests.get(url, headers=headers, timeout=10)
+    reponse.raise_for_status()
+    with open(chemin_local, "wb") as f:
+        f.write(reponse.content)
+
     return chemin_local
 
 
@@ -149,7 +159,10 @@ def verdict():
             else:
                 categorie = resultat["categorie"]
             confiance = resultat["confiance"]
-        except Exception:
+        except Exception as e:
+            print(f"[DEBUG] Erreur: {e}")
+            import traceback
+            traceback.print_exc()
             categorie = "incertain"
             confiance = None
 
