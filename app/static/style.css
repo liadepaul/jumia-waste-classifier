@@ -1,14 +1,288 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Amatic+SC:wght@700&display=swap');
+@font-face {
+    font-family: "Poppins";
+    src: url("./fonts/poppins-400.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Poppins";
+    src: url("./fonts/poppins-500.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Poppins";
+    src: url("./fonts/poppins-600.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Poppins";
+    src: url("./fonts/poppins-700.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+}
+
+:root {
+    --couleur-jaune: #FFD43B;
+    --couleur-verte: #2E7D32;
+    --couleur-bleue: #2878FF;
+    --couleur-grise: #8D9399;
+    --couleur-marron: #8B5E3C;
+    --couleur-olive: #444B32;
+    --couleur-incertain: #F4F1EA;
+    --couleur-ambre: #D89428;
+    --couleur-encre: #1B2420;
+    --couleur-blanc: #FFFFFF;
+    --couleur-verre: rgba(255, 255, 255, 0.16);
+    --bordure-verre: rgba(255, 255, 255, 0.38);
+    --ombre-douce: 0 18px 50px rgba(20, 27, 22, 0.16);
+    --rayon-petit: 12px;
+    --rayon-moyen: 20px;
+    --rayon-grand: 32px;
+    --largeur-contenu: 1440px;
+    --transition-interface: 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 
 * {
     box-sizing: border-box;
 }
 
+html {
+    min-width: 320px;
+    scroll-behavior: smooth;
+}
+
 body {
-    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    font-family: "Poppins";
     background: #F0EEE6;
     margin: 0;
-    padding: 2rem 1rem;
+    color: var(--couleur-encre);
+    text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+a {
+    color: inherit;
+}
+
+:focus-visible {
+    outline: 3px solid var(--couleur-jaune);
+    outline-offset: 4px;
+}
+
+.lien-evitement {
+    position: fixed;
+    z-index: 1000;
+    top: 12px;
+    left: 12px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: var(--couleur-blanc);
+    color: var(--couleur-encre);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transform: translateY(-160%);
+    transition: transform var(--transition-interface);
+}
+
+.lien-evitement:focus {
+    transform: translateY(0);
+}
+
+.site-shell {
+    width: min(100%, var(--largeur-contenu));
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 24px clamp(18px, 4vw, 64px) 40px;
+}
+
+.site-header {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 56px;
+    margin-bottom: 24px;
+}
+
+.marque-ecosort {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: clamp(1.15rem, 2vw, 1.4rem);
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.marque-icone {
+    width: 30px;
+    height: 30px;
+    overflow: visible;
+    fill: var(--couleur-verte);
+}
+
+.marque-nervure {
+    fill: none;
+    stroke: var(--couleur-blanc);
+    stroke-linecap: round;
+    stroke-width: 1.8;
+}
+
+.site-nav {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 3vw, 36px);
+}
+
+.site-nav-lien {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.site-nav-lien::after {
+    position: absolute;
+    right: 0;
+    bottom: 3px;
+    left: 0;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    content: "";
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--transition-interface);
+}
+
+.site-nav-lien:hover::after,
+.site-nav-lien:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.site-nav-recherche svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 1.8;
+}
+
+.page-content {
+    min-height: calc(100vh - 120px);
+}
+
+.verre-liquide {
+    border: 1px solid var(--bordure-verre);
+    background: var(--couleur-verre);
+    box-shadow: var(--ombre-douce);
+    backdrop-filter: blur(20px) saturate(135%);
+    -webkit-backdrop-filter: blur(20px) saturate(135%);
+}
+
+.bouton-commun {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 22px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        transform var(--transition-interface),
+        box-shadow var(--transition-interface),
+        background-color var(--transition-interface);
+}
+
+.bouton-commun:hover {
+    transform: translateY(-2px);
+}
+
+.bouton-principal {
+    background: var(--couleur-blanc);
+    color: var(--couleur-encre);
+    box-shadow: 0 12px 28px rgba(20, 27, 22, 0.15);
+}
+
+.bouton-secondaire {
+    border-color: currentColor;
+    background: transparent;
+}
+
+@media (max-width: 640px) {
+    .site-shell {
+        padding: 14px 14px 24px;
+    }
+
+    .site-header {
+        margin-bottom: 14px;
+    }
+
+    .site-nav {
+        gap: 14px;
+    }
+
+    .site-nav-lien {
+        font-size: 0.82rem;
+    }
+
+    .site-nav-recherche span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
 }
 
 .carte {
@@ -80,7 +354,7 @@ body {
 }
 
 .titre-amatic {
-    font-family: 'Amatic SC', cursive;
+    font-family: "Poppins";
     font-weight: 700;
     font-size: 52px;
     line-height: 0.9;
@@ -181,7 +455,7 @@ body {
     flex: 1;
     border: none;
     background: transparent;
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins";
     font-size: 13.5px;
     color: #1B2420;
     outline: none;
@@ -225,7 +499,7 @@ body {
 }
 
 .titre-page {
-    font-family: 'Amatic SC', cursive;
+    font-family: "Poppins";
     font-weight: 700;
     font-size: 34px;
     color: #F8F9F4;
@@ -262,7 +536,7 @@ body {
     width: 100%;
     text-align: left;
     cursor: pointer;
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins";
 }
 
 .vignette-produit {
@@ -344,7 +618,7 @@ body {
 }
 
 .label-verdict {
-    font-family: 'Amatic SC', cursive;
+    font-family: "Poppins";
     font-weight: 700;
     font-size: 56px;
     line-height: 0.9;
@@ -388,7 +662,7 @@ body {
     text-align: center;
     border: none;
     cursor: pointer;
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins";
     text-decoration: none;
 }
 
