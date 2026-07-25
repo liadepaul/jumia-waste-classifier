@@ -3,8 +3,9 @@
 Documentation technique de la branche `validation/interface-docker` (responsabilité Élève C).
 
 > Cette branche couvre uniquement le fonctionnement technique de l'application
-> (routes Flask, Docker). L'apparence (templates, CSS) est gérée séparément sur
-> `validation/design`.
+> (routes Flask, Docker). L'apparence (templates, CSS) sera gérée séparément
+> sur la branche `validation/design`, qui sera créée par l'Élève A dans une
+> étape ultérieure du projet.
 
 ---
 
