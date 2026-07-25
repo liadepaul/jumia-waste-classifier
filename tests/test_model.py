@@ -6,6 +6,7 @@ from PIL import Image
 
 import model.predict as prediction
 from model.evaluer import calculer_metriques, construire_matrice
+from model.entrainer_candidat import calculer_poids_classes
 
 
 class FauxModele:
@@ -73,3 +74,19 @@ def test_construction_matrice():
     assert matrice[0, 1] == 1
     assert matrice[1, 1] == 1
     assert matrice[5, 5] == 1
+
+
+def test_poids_classes_compensent_classe_minoritaire():
+    comptes = {
+        "cardboard": 100,
+        "glass": 100,
+        "metal": 100,
+        "paper": 100,
+        "plastic": 100,
+        "trash": 20,
+    }
+
+    poids = calculer_poids_classes(comptes)
+
+    assert poids[5] > poids[0]
+    assert poids[5] == pytest.approx(520 / (6 * 20))
