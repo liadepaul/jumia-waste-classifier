@@ -169,8 +169,9 @@ def chercher_produits(
         return []
 
     resultats = []
+    liens_vus = set()
 
-    for produit in produits_html[:limite]:
+    for produit in produits_html:
         nom_tag = produit.select_one("h3.name")
         prix_tag = produit.select_one("div.prc")
         image_tag = produit.select_one("img")
@@ -208,6 +209,10 @@ def chercher_produits(
         if not nom_tag or not lien or not image_url:
             continue
 
+        if lien in liens_vus:
+            continue
+        liens_vus.add(lien)
+
         resultats.append(
             {
                 "nom": nom,
@@ -217,6 +222,9 @@ def chercher_produits(
                 "categorie_jumia": None,
             }
         )
+
+        if len(resultats) >= limite:
+            break
 
     return resultats
 
