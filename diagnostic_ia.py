@@ -61,6 +61,11 @@ def lire_images_jumia(fichier_csv: Path, limite: int) -> list[dict]:
                     "type_image": "jumia",
                     "fichier": chemin,
                     "nom": ligne["nom"],
+                    "mot_cle": (
+                        ligne.get("mot_cle")
+                        or ligne.get("recherche")
+                        or ""
+                    ),
                     "categorie_jumia": ligne.get("categorie_jumia", ""),
                     "attendue": ligne["poubelle_attendue"].strip().lower(),
                 }
@@ -105,7 +110,7 @@ def analyser(ligne: dict) -> dict:
 
     produit = {
         "nom": ligne["nom"],
-        "mot_cle": "",
+        "mot_cle": ligne.get("mot_cle", ""),
         "categorie_jumia": ligne["categorie_jumia"],
         "image_url": "",
     }
@@ -157,13 +162,29 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(resultats)
 
-    valides = [r for r in resultats if not r["erreur"]]
-    modele_ok = sum(r["modele_correct"] is True for r in valides)
-    app_ok = sum(r["application_correcte"] is True for r in valides)
     print(f"Rapport écrit dans : {args.output.resolve()}")
-    print(f"Modèle direct : {modele_ok}/{len(valides)} verdicts corrects")
-    print(f"Application  : {app_ok}/{len(valides)} verdicts corrects")
-    print(f"Erreurs techniques : {len(resultats) - len(valides)}")
+    for type_image in ("dataset", "jumia"):
+        groupe = [
+            resultat
+            for resultat in resultats
+            if resultat["type_image"] == type_image
+        ]
+        valides = [resultat for resultat in groupe if not resultat["erreur"]]
+        modele_ok = sum(
+            resultat["modele_correct"] is True for resultat in valides
+        )
+        app_ok = sum(
+            resultat["application_correcte"] is True
+            for resultat in valides
+        )
+        print(
+            f"{type_image.capitalize()} — modèle : "
+            f"{modele_ok}/{len(valides)} ; application : "
+            f"{app_ok}/{len(valides)}"
+        )
+
+    erreurs = sum(bool(resultat["erreur"]) for resultat in resultats)
+    print(f"Erreurs techniques : {erreurs}")
 
 
 if __name__ == "__main__":

@@ -48,3 +48,29 @@ def test_emballages_explicites_restent_jaunes():
     assert categorie_depuis_texte(
         produit("Bouteille en plastique")
     ) == "jaune"
+
+
+def test_contenant_en_verre_est_reconnu_malgre_les_mots_intermediaires():
+    assert (
+        categorie_depuis_texte(produit("Bocal de stockage hermétique en verre"))
+        == "vert"
+    )
+    assert (
+        categorie_depuis_texte(produit("Ensemble de quatre bocaux en verre"))
+        == "vert"
+    )
+
+
+def test_bouteille_de_boisson_sans_matiere_explicitement_indiquee():
+    assert (
+        categorie_depuis_texte(produit("Lot de bouteilles d'eau minérale"))
+        == "jaune"
+    )
+    assert (
+        categorie_depuis_texte(produit("Bouteille d'eau en verre"))
+        == "vert"
+    )
+
+
+def test_shampoing_conditionne_en_flacon_est_un_emballage_jaune():
+    assert categorie_depuis_texte(produit("Shampoing à l'huile 400 ml")) == "jaune"
