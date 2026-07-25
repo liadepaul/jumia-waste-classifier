@@ -259,4 +259,6 @@ diagnostic/resultats.csv
 diagnostic/resultats_holdout.csv
 diagnostic/evaluation_modele.json
 diagnostic/matrice_confusion.csv
+diagnostic/resultats_echantillon_groupe_hybride.csv
+diagnostic/resultats_echantillon_groupe_cnn.csv
 model/candidats/
