@@ -37,6 +37,19 @@ python diagnostic_ia.py \
   --output diagnostic/resultats.csv
 ```
 
+Pour comparer un checkpoint candidat sans remplacer le modèle de l'application :
+
+```bash
+python diagnostic_ia.py \
+  --dataset-dir data/split/test \
+  --jumia-csv diagnostic/jumia.csv \
+  --output diagnostic/resultats_candidat.csv \
+  --modele-direct model/candidats/modele_candidat.keras
+```
+
+Dans ce cas, la colonne du modèle direct utilise le candidat, tandis que la
+colonne de l'application continue d'utiliser le modèle actuellement déployé.
+
 Sous PowerShell, la commande peut être écrite sur une seule ligne.
 
 ## 3. Interpréter `resultats.csv`

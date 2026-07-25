@@ -69,6 +69,24 @@ Sources des 50 décisions de l'application :
 
 Le CNN n'a pas été remplacé ni modifié. Son score direct reste donc 16/50.
 
+## Réévaluation après l'expérience IA 02
+
+Un nouveau CNN a ensuite été entraîné exclusivement avec le dataset Kaggle.
+Sans modifier les annotations ni les règles du benchmark, il obtient :
+
+| Poubelle | Ancien CNN | Nouveau CNN |
+|---|---:|---:|
+| Jaune | 8/10 | 8/10 |
+| Verte | 1/10 | 4/10 |
+| Bleue | 7/10 | 7/10 |
+| Grise (D3E) | 0/10 | 0/10 |
+| Marron | 0/10 | 1/10 |
+| **Total** | **16/50 (32 %)** | **20/50 (40 %)** |
+
+L'application hybride reste à 50/50 sur ce jeu de développement. Le gain du
+CNN est particulièrement visible sur le verre, mais les règles restent
+indispensables.
+
 ## Contrôle sur le dataset
 
 Dans la même exécution, un échantillon déterministe et réparti entre les six
@@ -86,7 +104,7 @@ du CNN.
 La conclusion est la suivante :
 
 - le CNN est convenable pour les images proches de son dataset ;
-- il généralise encore mal aux photographies commerciales Jumia ;
+- il progresse mais généralise encore mal aux photographies commerciales Jumia ;
 - les règles textuelles et D3E sont indispensables dans l'application actuelle ;
 - un nouveau lot Jumia, jamais consulté pendant le développement, doit servir
   de test final avant la présentation.

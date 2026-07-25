@@ -6,8 +6,11 @@ import argparse
 import csv
 from pathlib import Path
 
+import numpy as np
+import tensorflow as tf
+
 from app.app import determiner_verdict
-from model.predict import MAPPING_COULEUR, predire_categorie
+from model.predict import CLASSES, MAPPING_COULEUR, predire_categorie
 
 
 EXTENSIONS_IMAGES = {".jpg", ".jpeg", ".png", ".webp"}
@@ -75,7 +78,32 @@ def lire_images_jumia(fichier_csv: Path, limite: int) -> list[dict]:
     return lignes
 
 
-def analyser(ligne: dict) -> dict:
+def creer_predicteur(chemin_modele: Path | None):
+    """Retourne le prédicteur courant ou celui d'un modèle candidat."""
+    if chemin_modele is None:
+        return predire_categorie
+
+    modele = tf.keras.models.load_model(chemin_modele)
+
+    def predire(chemin_image: str) -> dict:
+        image = tf.keras.utils.load_img(
+            chemin_image,
+            target_size=(224, 224),
+        )
+        tableau = tf.keras.utils.img_to_array(image)
+        predictions = np.asarray(
+            modele.predict(np.expand_dims(tableau, axis=0), verbose=0)
+        )[0]
+        classe = CLASSES[int(np.argmax(predictions))]
+        return {
+            "categorie": MAPPING_COULEUR[classe],
+            "confiance": round(float(np.max(predictions)), 4),
+        }
+
+    return predire
+
+
+def analyser(ligne: dict, predicteur=predire_categorie) -> dict:
     chemin = Path(ligne["fichier"])
     resultat = {
         "type_image": ligne["type_image"],
@@ -97,7 +125,7 @@ def analyser(ligne: dict) -> dict:
         return resultat
 
     try:
-        direct = predire_categorie(str(chemin))
+        direct = predicteur(str(chemin))
         resultat["poubelle_modele_direct"] = direct["categorie"]
         resultat["confiance_modele_direct"] = direct["confiance"]
         resultat["modele_correct"] = (
@@ -149,12 +177,24 @@ def main() -> None:
         type=Path,
         default=Path("diagnostic/resultats.csv"),
     )
+    parser.add_argument(
+        "--modele-direct",
+        type=Path,
+        help=(
+            "Modèle candidat facultatif pour la colonne modèle direct. "
+            "L'application continue d'utiliser le modèle déployé."
+        ),
+    )
     parser.add_argument("--nombre", type=int, default=10)
     args = parser.parse_args()
 
     entrees = choisir_images_dataset(args.dataset_dir, args.nombre)
     entrees += lire_images_jumia(args.jumia_csv, args.nombre)
-    resultats = [analyser(entree) for entree in entrees]
+    predicteur = creer_predicteur(args.modele_direct)
+    resultats = [
+        analyser(entree, predicteur=predicteur)
+        for entree in entrees
+    ]
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", encoding="utf-8-sig", newline="") as fichier:

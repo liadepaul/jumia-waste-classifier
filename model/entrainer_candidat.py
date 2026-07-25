@@ -75,6 +75,33 @@ def creer_modele() -> tuple[tf.keras.Model, tf.keras.Model]:
     return models.Model(entrees, sorties), base
 
 
+def creer_modele_inference(
+    modele_entraine: tf.keras.Model,
+) -> tf.keras.Model:
+    """Retire l'augmentation, inactive pendant les prédictions.
+
+    Ce modèle allégé reste compatible avec le fichier .h5 chargé par
+    l'application. Les poids du backbone et de la couche Dense proviennent
+    du meilleur checkpoint natif Keras.
+    """
+    entrees = tf.keras.Input(shape=TAILLE_IMAGE + (3,))
+    x = layers.Rescaling(
+        scale=1.0 / 127.5,
+        offset=-1,
+        name="preprocessing",
+    )(entrees)
+    base = modele_entraine.get_layer("mobilenetv2_1.00_224")
+    x = base(x, training=False)
+    x = layers.GlobalAveragePooling2D()(x)
+    x = layers.Dropout(0.35)(x)
+    sorties = layers.Dense(len(CLASSES), activation="softmax")(x)
+    modele_inference = models.Model(entrees, sorties)
+    modele_inference.layers[-1].set_weights(
+        modele_entraine.layers[-1].get_weights()
+    )
+    return modele_inference
+
+
 def compiler(modele: tf.keras.Model, taux: float) -> None:
     modele.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=taux),
@@ -251,7 +278,12 @@ def main() -> None:
         json.dumps(resume, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+    meilleur_modele = tf.keras.models.load_model(chemin_modele)
+    modele_inference = creer_modele_inference(meilleur_modele)
+    chemin_inference = args.output_dir / "modele_candidat_inference.h5"
+    modele_inference.save(chemin_inference, include_optimizer=False)
     print(f"Modèle candidat : {chemin_modele.resolve()}")
+    print(f"Modèle d'inférence : {chemin_inference.resolve()}")
 
 
 if __name__ == "__main__":
