@@ -169,6 +169,7 @@ def chercher_produits(
         return []
 
     resultats = []
+    liens_vus = set()
 
     for produit in produits_html[:limite]:
         nom_tag = produit.select_one("h3.name")
@@ -207,6 +208,10 @@ def chercher_produits(
         # à l'utilisateur de sélectionner un vrai produit.
         if not nom_tag or not lien or not image_url:
             continue
+
+        if lien in liens_vus:
+            continue
+        liens_vus.add(lien)
 
         resultats.append(
             {
