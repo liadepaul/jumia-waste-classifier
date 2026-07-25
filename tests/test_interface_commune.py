@@ -20,6 +20,15 @@ def test_accueil_charge_la_navigation_commune(client):
     assert b'class="marque-ecosort"' in reponse.data
     assert b'id="contenu-principal"' in reponse.data
     assert b'id="recherche"' in reponse.data
+    assert reponse.data.count(b"data-slide") == 5
+    assert b"data-carousel-pause" in reponse.data
+    assert b"data-open-search" in reponse.data
+    assert b"slide-carrousel" not in reponse.data
+    assert "Poubelle jaune".encode() in reponse.data
+    assert "Poubelle verte".encode() in reponse.data
+    assert "Poubelle bleue".encode() in reponse.data
+    assert "Poubelle grise".encode() in reponse.data
+    assert "Poubelle marron".encode() in reponse.data
 
 
 def test_resultats_reutilisent_le_gabarit_commun(client):
@@ -54,3 +63,15 @@ def test_poppins_est_servie_localement_sans_police_de_secours(client):
         police = client.get(f"/static/fonts/poppins-{graisse}.woff2")
         assert police.status_code == 200
         assert police.data.startswith(b"wOF2")
+
+
+@pytest.mark.parametrize(
+    "couleur",
+    ("jaune", "vert", "bleu", "gris", "marron"),
+)
+def test_les_cinq_bacs_3d_sont_servis_localement(client, couleur):
+    image = client.get(f"/static/images/bacs/bac-{couleur}.png")
+
+    assert image.status_code == 200
+    assert image.mimetype == "image/png"
+    assert image.data.startswith(b"\x89PNG\r\n\x1a\n")
