@@ -252,3 +252,5 @@ Thumbs.db
 app/static/tmp/
 diagnostic/images_jumia/
 diagnostic/resultats.csv
+diagnostic/evaluation_modele.json
+diagnostic/matrice_confusion.csv
