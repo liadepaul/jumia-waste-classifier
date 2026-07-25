@@ -229,6 +229,7 @@ MAPPING_AFFICHAGE = {
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HOTES_IMAGES_AUTORISES = ("jumia.ci", "jumia.is")
+HOTES_LIENS_PRODUITS_AUTORISES = ("jumia.ci",)
 
 
 def _url_image_autorisee(url: str) -> bool:
@@ -245,6 +246,24 @@ def _url_image_autorisee(url: str) -> bool:
         and any(
             hote == domaine or hote.endswith(f".{domaine}")
             for domaine in HOTES_IMAGES_AUTORISES
+        )
+    )
+
+
+def _lien_jumia_valide(url: str) -> bool:
+    """N'expose au template qu'un lien produit HTTPS servi par Jumia."""
+    try:
+        parsed = urlparse(url)
+        hote = (parsed.hostname or "").lower().rstrip(".")
+    except (TypeError, ValueError):
+        return False
+
+    return (
+        parsed.scheme == "https"
+        and bool(parsed.path)
+        and any(
+            hote == domaine or hote.endswith(f".{domaine}")
+            for domaine in HOTES_LIENS_PRODUITS_AUTORISES
         )
     )
 
@@ -450,18 +469,28 @@ def recherche():
 @app.route("/verdict", methods=["POST"])
 def verdict():
     nom = request.form.get("nom", "")
-    image_url = request.form.get("image_url", "")
+    image_url_brute = request.form.get("image_url", "")
+    image_url = (
+        image_url_brute
+        if _url_image_autorisee(image_url_brute)
+        else ""
+    )
     categorie_jumia = request.form.get(
         "categorie_jumia",
         "",
     )
     mot_cle = request.form.get("mot_cle", "")
+    prix = request.form.get("prix", "")
+    lien_brut = request.form.get("lien", "")
+    lien = lien_brut if _lien_jumia_valide(lien_brut) else ""
 
     produit = {
         "nom": nom,
         "image_url": image_url,
         "categorie_jumia": categorie_jumia,
         "mot_cle": mot_cle,
+        "prix": prix,
+        "lien": lien,
     }
 
     decision = determiner_verdict(produit)
@@ -481,6 +510,7 @@ def verdict():
         "verdict.html",
         produit=produit,
         affichage=affichage,
+        categorie=categorie,
         confiance=confiance,
         source_verdict=decision["source"],
     )

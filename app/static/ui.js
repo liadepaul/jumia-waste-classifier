@@ -201,18 +201,35 @@ if (dialogueRecherche) {
         }
     });
 
-    champRecherche.addEventListener("input", () => {
-        suggestions.hidden = champRecherche.value.trim().length < 2;
-    });
+    const boutonsSuggestions = suggestions.querySelectorAll(
+        "[data-suggestion]"
+    );
 
-    suggestions.querySelectorAll("[data-suggestion]").forEach((bouton) => {
+    function mettreAJourSuggestions() {
+        const saisie = champRecherche.value.trim().toLocaleLowerCase("fr");
+        let nombreCorrespondances = 0;
+
+        boutonsSuggestions.forEach((bouton) => {
+            const proposition = bouton.dataset.suggestion.toLocaleLowerCase("fr");
+            const correspond = saisie.length >= 2 && proposition.includes(saisie);
+
+            bouton.hidden = !correspond;
+            nombreCorrespondances += correspond ? 1 : 0;
+        });
+
+        suggestions.hidden = saisie.length < 2 || nombreCorrespondances === 0;
+    }
+
+    champRecherche.addEventListener("input", mettreAJourSuggestions);
+
+    boutonsSuggestions.forEach((bouton) => {
         bouton.addEventListener("click", () => {
             champRecherche.value = bouton.dataset.suggestion;
             formulaire.requestSubmit();
         });
     });
 
-    suggestions.hidden = true;
+    mettreAJourSuggestions();
 
     if (window.location.hash === "#recherche") {
         ouvrirRecherche();

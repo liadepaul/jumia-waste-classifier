@@ -49,6 +49,95 @@ def test_resultats_reutilisent_le_gabarit_commun(client):
     assert b'class="site-header"' in reponse.data
     assert "Résultats".encode() in reponse.data
     assert b"Cahier recycle" in reponse.data
+    assert b'name="prix" value="2 500 FCFA"' in reponse.data
+    assert b'name="lien" value="https://www.jumia.ci/cahier.html"' in reponse.data
+
+
+def test_verdict_certain_affiche_produit_bac_et_lien_jumia(client):
+    decision = {
+        "categorie": "jaune",
+        "confiance": 0.87,
+        "source": "IA",
+        "erreur": None,
+    }
+
+    with patch("app.app.determiner_verdict", return_value=decision):
+        reponse = client.post(
+            "/verdict",
+            data={
+                "nom": "Bouteille recyclable",
+                "image_url": "https://ci.jumia.is/bouteille.jpg",
+                "prix": "3 500 FCFA",
+                "lien": "https://www.jumia.ci/bouteille-123.html",
+            },
+        )
+
+    assert reponse.status_code == 200
+    assert b"verdict-certain" in reponse.data
+    assert b"images/bacs/bac-jaune.png" in reponse.data
+    assert b"Bouteille recyclable" in reponse.data
+    assert b"3 500 FCFA" in reponse.data
+    assert b"https://www.jumia.ci/bouteille-123.html" in reponse.data
+    assert "Voir sur Jumia".encode() in reponse.data
+    assert b"87.0" in reponse.data
+
+
+def test_verdict_incertain_reste_neutre_et_sans_poubelle(client):
+    decision = {
+        "categorie": "incertain",
+        "confiance": 0.32,
+        "source": "IA",
+        "erreur": None,
+    }
+
+    with patch("app.app.determiner_verdict", return_value=decision):
+        reponse = client.post(
+            "/verdict",
+            data={
+                "nom": "Objet ambigu",
+                "image_url": "https://ci.jumia.is/objet.jpg",
+                "lien": "https://phishing-jumia.example.com/objet.html",
+            },
+        )
+
+    assert reponse.status_code == 200
+    assert b"verdict-incertain" in reponse.data
+    assert b"images/bacs/" not in reponse.data
+    assert "Le verdict reste incertain".encode() in reponse.data
+    assert b"phishing-jumia.example.com" not in reponse.data
+    assert "Voir sur Jumia".encode() not in reponse.data
+
+
+def test_verdict_refuse_un_cdn_comme_lien_produit(client):
+    decision = {
+        "categorie": "jaune",
+        "confiance": 0.87,
+        "source": "IA",
+        "erreur": None,
+    }
+
+    with patch("app.app.determiner_verdict", return_value=decision):
+        reponse = client.post(
+            "/verdict",
+            data={
+                "nom": "Bouteille recyclable",
+                "image_url": "https://ci.jumia.is/bouteille.jpg",
+                "lien": "https://ci.jumia.is/bouteille.jpg",
+            },
+        )
+
+    assert reponse.status_code == 200
+    assert b'<img src="https://ci.jumia.is/bouteille.jpg"' in reponse.data
+    assert "Voir sur Jumia".encode() not in reponse.data
+
+
+def test_script_filtre_les_suggestions_et_nouvre_le_hash_quune_fois(client):
+    script = client.get("/static/ui.js")
+
+    assert script.status_code == 200
+    assert b"proposition.includes(saisie)" in script.data
+    assert b"bouton.hidden = !correspond" in script.data
+    assert script.data.count(b'window.location.hash === "#recherche"') == 1
 
 
 def test_poppins_est_servie_localement_sans_police_de_secours(client):
