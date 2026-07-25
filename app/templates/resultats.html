@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Resultats - EcoSort-Search</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
 </head>
 <body>
     <main class="carte">
@@ -58,5 +58,22 @@
             {% endif %}
         </div>
     </main>
+    <script>
+document.querySelectorAll('form[action*="verdict"]').forEach(form => {
+    form.addEventListener('submit', () => {
+        const bouton = form.querySelector('button.carte-produit');
+        if (bouton) {
+            bouton.disabled = true;
+            bouton.style.opacity = '0.6';
+            bouton.style.pointerEvents = 'none';
+            const fleche = bouton.querySelector('.fleche-produit i');
+            if (fleche) {
+                fleche.className = 'ti ti-loader-2';
+                fleche.style.animation = 'tourne 0.8s linear infinite';
+            }
+        }
+    });
+});
+</script>
 </body>
 </html>

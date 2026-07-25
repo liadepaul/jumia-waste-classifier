@@ -396,3 +396,89 @@ body {
     font-size: 20px;
     color: #2E7D32;
 }
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+.panneau-verdict {
+    animation: verdict-entree 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes verdict-entree {
+    0%   { opacity: 0; transform: scale(0.92) translateY(24px); }
+    60%  { opacity: 1; transform: scale(1.02) translateY(-4px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.icone-verdict i {
+    display: inline-block;
+    animation: icone-tourne 0.8s ease-out 0.15s both;
+}
+@keyframes icone-tourne {
+    from { transform: rotate(-90deg) scale(0.5); opacity: 0; }
+    to   { transform: rotate(0deg) scale(1); opacity: 1; }
+}
+
+.label-verdict {
+    animation: texte-monte 0.5s ease-out 0.35s both;
+}
+.nom-produit-verdict,
+.explication-verdict {
+    animation: texte-monte 0.5s ease-out 0.25s both;
+}
+@keyframes texte-monte {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.badge-confiance {
+    animation: badge-apparait 0.4s ease-out 0.55s both,
+               badge-pulse 2.4s ease-in-out 1s infinite;
+}
+@keyframes badge-apparait {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
+}
+@keyframes badge-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.04); }
+}
+
+.action-verdict {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.action-verdict:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.action-verdict:active {
+    transform: translateY(0);
+}
+
+.carte-produit {
+    animation: carte-entree 0.5s ease-out both;
+}
+.carte-produit:nth-child(1) { animation-delay: 0.05s; }
+.carte-produit:nth-child(2) { animation-delay: 0.15s; }
+.carte-produit:nth-child(3) { animation-delay: 0.25s; }
+.carte-produit:nth-child(4) { animation-delay: 0.35s; }
+.carte-produit:nth-child(5) { animation-delay: 0.45s; }
+@keyframes carte-entree {
+    from { opacity: 0; transform: translateX(-16px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+.carte-produit {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.carte-produit:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+@keyframes tourne {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
