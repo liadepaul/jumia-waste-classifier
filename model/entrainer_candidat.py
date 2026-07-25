@@ -85,9 +85,14 @@ def compiler(modele: tf.keras.Model, taux: float) -> None:
 
 def callbacks(
     chemin_modele: Path,
+    chemin_journal: Path,
     seuil_initial: float | None = None,
 ) -> list[tf.keras.callbacks.Callback]:
     return [
+        tf.keras.callbacks.CSVLogger(
+            chemin_journal,
+            append=False,
+        ),
         tf.keras.callbacks.EarlyStopping(
             monitor="val_loss",
             patience=5,
@@ -118,6 +123,17 @@ def fusionner_historiques(*historiques) -> dict[str, list[float]]:
         ]
         for cle in cles
     }
+
+
+def sauvegarder_historique(
+    chemin: Path,
+    historique: dict[str, list[float]],
+) -> None:
+    """Écrit les métriques immédiatement après chaque phase."""
+    chemin.write_text(
+        json.dumps(historique, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
 
 
 def main() -> None:
@@ -186,9 +202,17 @@ def main() -> None:
         validation_data=validation,
         epochs=args.epochs_tete,
         class_weight=poids,
-        callbacks=callbacks(chemin_modele),
+        callbacks=callbacks(
+            chemin_modele,
+            args.output_dir / "journal_tete.csv",
+        ),
+        verbose=2,
     )
 
+    sauvegarder_historique(
+        args.output_dir / "historique_tete.json",
+        fusionner_historiques(historique_tete),
+    )
     meilleure_val_loss_tete = min(historique_tete.history["val_loss"])
     base.trainable = True
     for couche in base.layers[:-30]:
@@ -199,7 +223,12 @@ def main() -> None:
         validation_data=validation,
         epochs=args.epochs_finetuning,
         class_weight=poids,
-        callbacks=callbacks(chemin_modele, meilleure_val_loss_tete),
+        callbacks=callbacks(
+            chemin_modele,
+            args.output_dir / "journal_finetuning.csv",
+            meilleure_val_loss_tete,
+        ),
+        verbose=2,
     )
 
     historique = fusionner_historiques(
