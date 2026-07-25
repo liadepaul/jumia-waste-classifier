@@ -24,5 +24,9 @@ COPY . .
 ENV PORT=8501
 EXPOSE 8501
 
+# Verifie que Flask repond et que le fichier du modele est bien embarque.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/health', timeout=3)"]
+
 # --- Lancement de l'application ---
 CMD ["python", "app/app.py"]

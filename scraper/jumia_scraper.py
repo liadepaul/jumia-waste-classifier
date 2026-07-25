@@ -203,6 +203,11 @@ def chercher_produits(
         if lien:
             lien = urljoin(DOMAINE_JUMIA, lien)
 
+        # Ignore les cartes publicitaires/incomplètes qui ne permettent pas
+        # à l'utilisateur de sélectionner un vrai produit.
+        if not nom_tag or not lien or not image_url:
+            continue
+
         resultats.append(
             {
                 "nom": nom,

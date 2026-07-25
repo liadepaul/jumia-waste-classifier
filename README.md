@@ -86,6 +86,22 @@ Ouvrir ensuite :
 http://127.0.0.1:5000
 ```
 
+Vérification de l'état de l'application :
+
+```text
+http://127.0.0.1:5000/health
+```
+
+## Tests
+
+Les tests couvrent le contrat du scraper, les erreurs réseau, le filtrage des
+cartes incomplètes ainsi que la forme et le mapping des prédictions du modèle.
+
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest -q tests
+```
+
 ## Lancement avec Docker
 
 Construction de l’image :

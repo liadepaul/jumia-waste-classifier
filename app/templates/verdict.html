@@ -35,6 +35,9 @@
                     Confiance IA : {{ (confiance * 100) | round(1) }}%
                 </div>
                 {% endif %}
+                <p class="source-verdict" style="color:{{ affichage.texte_hex | default('#3D3000') }};">
+                    Source du verdict : {{ source_verdict }}
+                </p>
             </div>
 
             <div class="actions-verdict">

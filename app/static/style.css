@@ -368,6 +368,12 @@ body {
     font-weight: 500;
 }
 
+.source-verdict {
+    margin: 12px 0 0;
+    font-size: 11px;
+    opacity: 0.8;
+}
+
 .actions-verdict {
     display: flex;
     gap: 10px;

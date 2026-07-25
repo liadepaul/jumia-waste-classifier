@@ -38,6 +38,7 @@
                     <input type="hidden" name="nom" value="{{ produit.nom }}">
                     <input type="hidden" name="image_url" value="{{ produit.image_url }}">
                     <input type="hidden" name="categorie_jumia" value="{{ produit.categorie_jumia or '' }}">
+                    <input type="hidden" name="mot_cle" value="{{ mot_cle }}">
                     <button type="submit" class="carte-produit">
                         <div class="vignette-produit">
                             {% if produit.image_url %}
