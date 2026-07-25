@@ -91,16 +91,41 @@ MOTS_CLES_VERT = [
     "pot de confiture",
 ]
 
+MOTS_CLES_MARRON = [
+    "verre à boire",
+    "verre a boire",
+    "vaisselle",
+    "assiette",
+    "tasse",
+    "miroir",
+    "vitre",
+    "gourde réutilisable",
+    "gourdes réutilisables",
+    "gourde reutilisable",
+    "gourdes reutilisables",
+    "kit de coiffure",
+    "brosse",
+    "peigne",
+    "coffre",
+    "jouet",
+    "multicouche",
+    "multi-matière",
+    "multi-matiere",
+    "acier et plastique",
+    "papier acier et plastique",
+]
+
 MOTS_CLES_JAUNE = [
     "bouteille plastique",
     "bouteille en plastique",
-    "plastique",
-    "carton",
+    "flacon plastique",
+    "flacon en plastique",
+    "carton d'emballage",
+    "carton de colis",
     "canette",
     "boite de conserve",
     "boîte de conserve",
-    "acier",
-    "aluminium",
+    "barquette aluminium",
 ]
 
 
@@ -129,6 +154,9 @@ def categorie_depuis_texte(produit: dict) -> str | None:
     nom = produit.get("nom", "")
     mot_cle = produit.get("mot_cle", "")
     texte = f"{nom} {mot_cle}".lower()
+
+    if any(mot in texte for mot in MOTS_CLES_MARRON):
+        return "marron"
 
     if any(mot in texte for mot in MOTS_CLES_VERT):
         return "vert"
