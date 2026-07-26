@@ -6,8 +6,11 @@ import argparse
 import csv
 from pathlib import Path
 
+import numpy as np
+import tensorflow as tf
+
 from app.app import determiner_verdict
-from model.predict import MAPPING_COULEUR, predire_categorie
+from model.predict import CLASSES, MAPPING_COULEUR, predire_categorie
 
 
 EXTENSIONS_IMAGES = {".jpg", ".jpeg", ".png", ".webp"}
@@ -61,6 +64,11 @@ def lire_images_jumia(fichier_csv: Path, limite: int) -> list[dict]:
                     "type_image": "jumia",
                     "fichier": chemin,
                     "nom": ligne["nom"],
+                    "mot_cle": (
+                        ligne.get("mot_cle")
+                        or ligne.get("recherche")
+                        or ""
+                    ),
                     "categorie_jumia": ligne.get("categorie_jumia", ""),
                     "attendue": ligne["poubelle_attendue"].strip().lower(),
                 }
@@ -70,7 +78,32 @@ def lire_images_jumia(fichier_csv: Path, limite: int) -> list[dict]:
     return lignes
 
 
-def analyser(ligne: dict) -> dict:
+def creer_predicteur(chemin_modele: Path | None):
+    """Retourne le prédicteur courant ou celui d'un modèle candidat."""
+    if chemin_modele is None:
+        return predire_categorie
+
+    modele = tf.keras.models.load_model(chemin_modele)
+
+    def predire(chemin_image: str) -> dict:
+        image = tf.keras.utils.load_img(
+            chemin_image,
+            target_size=(224, 224),
+        )
+        tableau = tf.keras.utils.img_to_array(image)
+        predictions = np.asarray(
+            modele.predict(np.expand_dims(tableau, axis=0), verbose=0)
+        )[0]
+        classe = CLASSES[int(np.argmax(predictions))]
+        return {
+            "categorie": MAPPING_COULEUR[classe],
+            "confiance": round(float(np.max(predictions)), 4),
+        }
+
+    return predire
+
+
+def analyser(ligne: dict, predicteur=predire_categorie) -> dict:
     chemin = Path(ligne["fichier"])
     resultat = {
         "type_image": ligne["type_image"],
@@ -92,7 +125,7 @@ def analyser(ligne: dict) -> dict:
         return resultat
 
     try:
-        direct = predire_categorie(str(chemin))
+        direct = predicteur(str(chemin))
         resultat["poubelle_modele_direct"] = direct["categorie"]
         resultat["confiance_modele_direct"] = direct["confiance"]
         resultat["modele_correct"] = (
@@ -105,7 +138,7 @@ def analyser(ligne: dict) -> dict:
 
     produit = {
         "nom": ligne["nom"],
-        "mot_cle": "",
+        "mot_cle": ligne.get("mot_cle", ""),
         "categorie_jumia": ligne["categorie_jumia"],
         "image_url": "",
     }
@@ -144,12 +177,24 @@ def main() -> None:
         type=Path,
         default=Path("diagnostic/resultats.csv"),
     )
+    parser.add_argument(
+        "--modele-direct",
+        type=Path,
+        help=(
+            "Modèle candidat facultatif pour la colonne modèle direct. "
+            "L'application continue d'utiliser le modèle déployé."
+        ),
+    )
     parser.add_argument("--nombre", type=int, default=10)
     args = parser.parse_args()
 
     entrees = choisir_images_dataset(args.dataset_dir, args.nombre)
     entrees += lire_images_jumia(args.jumia_csv, args.nombre)
-    resultats = [analyser(entree) for entree in entrees]
+    predicteur = creer_predicteur(args.modele_direct)
+    resultats = [
+        analyser(entree, predicteur=predicteur)
+        for entree in entrees
+    ]
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", encoding="utf-8-sig", newline="") as fichier:
@@ -157,13 +202,29 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(resultats)
 
-    valides = [r for r in resultats if not r["erreur"]]
-    modele_ok = sum(r["modele_correct"] is True for r in valides)
-    app_ok = sum(r["application_correcte"] is True for r in valides)
     print(f"Rapport écrit dans : {args.output.resolve()}")
-    print(f"Modèle direct : {modele_ok}/{len(valides)} verdicts corrects")
-    print(f"Application  : {app_ok}/{len(valides)} verdicts corrects")
-    print(f"Erreurs techniques : {len(resultats) - len(valides)}")
+    for type_image in ("dataset", "jumia"):
+        groupe = [
+            resultat
+            for resultat in resultats
+            if resultat["type_image"] == type_image
+        ]
+        valides = [resultat for resultat in groupe if not resultat["erreur"]]
+        modele_ok = sum(
+            resultat["modele_correct"] is True for resultat in valides
+        )
+        app_ok = sum(
+            resultat["application_correcte"] is True
+            for resultat in valides
+        )
+        print(
+            f"{type_image.capitalize()} — modèle : "
+            f"{modele_ok}/{len(valides)} ; application : "
+            f"{app_ok}/{len(valides)}"
+        )
+
+    erreurs = sum(bool(resultat["erreur"]) for resultat in resultats)
+    print(f"Erreurs techniques : {erreurs}")
 
 
 if __name__ == "__main__":

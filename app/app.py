@@ -158,13 +158,36 @@ def categorie_depuis_texte(produit: dict) -> str | None:
     if any(mot in texte for mot in MOTS_CLES_MARRON):
         return "marron"
 
-    if any(mot in texte for mot in MOTS_CLES_VERT):
+    contenant_en_verre = (
+        "verre" in texte
+        and any(
+            contenant in texte
+            for contenant in ("bocal", "bocaux", "bouteille", "pot")
+        )
+    )
+    if contenant_en_verre or any(mot in texte for mot in MOTS_CLES_VERT):
         return "vert"
 
     if any(mot in texte for mot in MOTS_CLES_BLEU):
         return "bleu"
 
-    if any(mot in texte for mot in MOTS_CLES_JAUNE):
+    bouteille_de_boisson = (
+        "bouteille" in texte
+        and "verre" not in texte
+        and any(
+            boisson in texte
+            for boisson in ("eau", "boisson", "soda", "jus")
+        )
+    )
+    produit_en_flacon = any(
+        mot in texte
+        for mot in ("shampoing", "shampooing", "après-shampooing")
+    )
+    if (
+        bouteille_de_boisson
+        or produit_en_flacon
+        or any(mot in texte for mot in MOTS_CLES_JAUNE)
+    ):
         return "jaune"
 
     return None

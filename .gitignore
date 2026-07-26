@@ -253,4 +253,12 @@ Thumbs.db
 # Images temporaires téléchargées par Flask
 app/static/tmp/
 diagnostic/images_jumia/
+diagnostic/images_benchmark_jumia/
+diagnostic/images_holdout_jumia/
 diagnostic/resultats.csv
+diagnostic/resultats_holdout.csv
+diagnostic/evaluation_modele.json
+diagnostic/matrice_confusion.csv
+diagnostic/resultats_echantillon_groupe_hybride.csv
+diagnostic/resultats_echantillon_groupe_cnn.csv
+model/candidats/

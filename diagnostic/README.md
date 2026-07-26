@@ -37,6 +37,36 @@ python diagnostic_ia.py \
   --output diagnostic/resultats.csv
 ```
 
+Pour comparer un checkpoint candidat sans remplacer le modèle de l'application :
+
+```bash
+python diagnostic_ia.py \
+  --dataset-dir data/split/test \
+  --jumia-csv diagnostic/jumia.csv \
+  --output diagnostic/resultats_candidat.csv \
+  --modele-direct model/candidats/modele_candidat.keras
+```
+
+Dans ce cas, la colonne du modèle direct utilise le candidat, tandis que la
+colonne de l'application continue d'utiliser le modèle actuellement déployé.
+
+## 3. Validation finale indépendante
+
+Le holdout final se trouve dans `diagnostic/holdout_jumia.csv`. Il contient
+25 produits contrôlés et ne partage aucun lien avec le benchmark de
+développement.
+
+Pour vérifier et figer ses annotations avant une nouvelle évaluation :
+
+```bash
+python diagnostic/valider_holdout_jumia.py \
+  diagnostic/holdout_jumia.csv \
+  --exclure-csv diagnostic/benchmark_jumia.csv
+```
+
+Les résultats publiés et les précautions méthodologiques sont détaillés dans
+`diagnostic/RESULTATS_HOLDOUT_FINAL.md`.
+
 Sous PowerShell, la commande peut être écrite sur une seule ligne.
 
 ## 3. Interpréter `resultats.csv`
