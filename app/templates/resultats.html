@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Resultats - EcoSort-Search</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
-</head>
-<body>
-    <main class="carte">
+{% extends "base.html" %}
+{% block title %}Résultats — EcoSort{% endblock %}
+{% block body_class %}page-resultats{% endblock %}
+{% block content %}
+    <section class="carte" aria-labelledby="titre-resultats">
         <svg class="fond-pointille" width="100%" height="100%">
             <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse">
                 <circle cx="2" cy="2" r="1.2" fill="#57603F"></circle>
@@ -23,7 +18,7 @@
                 <a href="{{ url_for('accueil') }}" class="bouton-retour">
                     <i class="ti ti-arrow-left" style="color:#1B2420;font-size:16px;"></i>
                 </a>
-                <h1 class="titre-page">Resultats</h1>
+                <h1 id="titre-resultats" class="titre-page">Résultats</h1>
             </div>
             <p class="sous-entete">pour <strong>"{{ mot_cle }}"</strong>{% if produits %} - {{ produits|length }} produits trouves{% endif %}</p>
 
@@ -39,6 +34,8 @@
                     <input type="hidden" name="image_url" value="{{ produit.image_url }}">
                     <input type="hidden" name="categorie_jumia" value="{{ produit.categorie_jumia or '' }}">
                     <input type="hidden" name="mot_cle" value="{{ mot_cle }}">
+                    <input type="hidden" name="prix" value="{{ produit.prix or '' }}">
+                    <input type="hidden" name="lien" value="{{ produit.lien or '' }}">
                     <button type="submit" class="carte-produit">
                         <div class="vignette-produit">
                             {% if produit.image_url %}
@@ -58,6 +55,5 @@
             </div>
             {% endif %}
         </div>
-    </main>
-</body>
-</html>
+    </section>
+{% endblock %}
