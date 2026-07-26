@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% block title %}Accueil — EcoSort{% endblock %}
+{% block body_class %}page-accueil{% endblock %}
+
+{% block content %}
+<section
+    class="accueil-hero"
+    aria-roledescription="carrousel"
+    aria-label="Découvrir les cinq catégories de tri"
+    data-carousel
+>
+    <div class="carousel-scene" data-carousel-scene>
+        <article
+            class="bac-slide est-active"
+            data-slide
+            data-couleur="jaune"
+            data-fond="#FFD43B"
+            data-texte="#252825"
+            aria-hidden="false"
+        >
+            <div class="bac-contenu">
+                <p class="bac-sur-titre">Bien trier, simplement</p>
+                <h1>Poubelle jaune</h1>
+                <p class="bac-usage">Emballages recyclables légers</p>
+                <p class="bac-description">
+                    Elle accueille les emballages ménagers en plastique,
+                    en métal et en carton.
+                </p>
+                <ul class="bac-exemples" aria-label="Exemples pour la poubelle jaune">
+                    <li>Bouteilles en plastique</li>
+                    <li>Canettes</li>
+                    <li>Cartons de colis</li>
+                </ul>
+                <button class="bouton-commun bouton-principal" type="button" data-open-search>
+                    Rechercher un produit
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5"></circle>
+                        <path d="m16 16 4 4"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="bac-visuel">
+                <div class="bac-halo" aria-hidden="true"></div>
+                <img
+                    src="{{ url_for('static', filename='images/bacs/bac-jaune.png') }}"
+                    alt="Poubelle jaune à deux roues"
+                    width="1024"
+                    height="1536"
+                    fetchpriority="high"
+                >
+            </div>
+        </article>
+
+        <article
+            class="bac-slide"
+            data-slide
+            data-couleur="vert"
+            data-fond="#2E7D32"
+            data-texte="#FFFFFF"
+            aria-hidden="true"
+        >
+            <div class="bac-contenu">
+                <p class="bac-sur-titre">Le verre se recycle</p>
+                <h2>Poubelle verte</h2>
+                <p class="bac-usage">Verre d’emballage uniquement</p>
+                <p class="bac-description">
+                    Elle reçoit les contenants en verre vidés, sans couvercle
+                    ni bouchon.
+                </p>
+                <ul class="bac-exemples" aria-label="Exemples pour la poubelle verte">
+                    <li>Bouteilles en verre</li>
+                    <li>Pots de confiture</li>
+                    <li>Bocaux de conserve</li>
+                </ul>
+                <button class="bouton-commun bouton-principal" type="button" data-open-search>
+                    Rechercher un produit
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5"></circle>
+                        <path d="m16 16 4 4"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="bac-visuel">
+                <div class="bac-halo" aria-hidden="true"></div>
+                <img
+                    src="{{ url_for('static', filename='images/bacs/bac-vert.png') }}"
+                    alt="Poubelle verte à deux roues"
+                    width="1024"
+                    height="1536"
+                    loading="lazy"
+                >
+            </div>
+        </article>
+
+        <article
+            class="bac-slide"
+            data-slide
+            data-couleur="bleu"
+            data-fond="#2878FF"
+            data-texte="#FFFFFF"
+            aria-hidden="true"
+        >
+            <div class="bac-contenu">
+                <p class="bac-sur-titre">Une nouvelle vie pour le papier</p>
+                <h2>Poubelle bleue</h2>
+                <p class="bac-usage">Papiers graphiques propres</p>
+                <p class="bac-description">
+                    Elle est réservée aux papiers propres, secs et sans
+                    résidus alimentaires.
+                </p>
+                <ul class="bac-exemples" aria-label="Exemples pour la poubelle bleue">
+                    <li>Cahiers</li>
+                    <li>Journaux</li>
+                    <li>Enveloppes</li>
+                </ul>
+                <button class="bouton-commun bouton-principal" type="button" data-open-search>
+                    Rechercher un produit
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5"></circle>
+                        <path d="m16 16 4 4"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="bac-visuel">
+                <div class="bac-halo" aria-hidden="true"></div>
+                <img
+                    src="{{ url_for('static', filename='images/bacs/bac-bleu.png') }}"
+                    alt="Poubelle bleue à deux roues"
+                    width="1024"
+                    height="1536"
+                    loading="lazy"
+                >
+            </div>
+        </article>
+
+        <article
+            class="bac-slide"
+            data-slide
+            data-couleur="gris"
+            data-fond="#8D9399"
+            data-texte="#202427"
+            aria-hidden="true"
+        >
+            <div class="bac-contenu">
+                <p class="bac-sur-titre">Les appareils ont leur filière</p>
+                <h2>Poubelle grise</h2>
+                <p class="bac-usage">Déchets électriques et électroniques</p>
+                <p class="bac-description">
+                    Ces appareils doivent rejoindre un point de collecte D3E
+                    pour être dépollués et recyclés.
+                </p>
+                <ul class="bac-exemples" aria-label="Exemples pour la poubelle grise">
+                    <li>Smartphones</li>
+                    <li>Chargeurs</li>
+                    <li>Petits appareils</li>
+                </ul>
+                <button class="bouton-commun bouton-principal" type="button" data-open-search>
+                    Rechercher un produit
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5"></circle>
+                        <path d="m16 16 4 4"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="bac-visuel">
+                <div class="bac-halo" aria-hidden="true"></div>
+                <img
+                    src="{{ url_for('static', filename='images/bacs/bac-gris.png') }}"
+                    alt="Poubelle grise à deux roues"
+                    width="1024"
+                    height="1536"
+                    loading="lazy"
+                >
+            </div>
+        </article>
+
+        <article
+            class="bac-slide"
+            data-slide
+            data-couleur="marron"
+            data-fond="#8B5E3C"
+            data-texte="#FFFFFF"
+            aria-hidden="true"
+        >
+            <div class="bac-contenu">
+                <p class="bac-sur-titre">Le dernier recours</p>
+                <h2>Poubelle marron</h2>
+                <p class="bac-usage">Déchets résiduels non recyclables</p>
+                <p class="bac-description">
+                    Elle reçoit les objets qui ne correspondent à aucune
+                    filière de recyclage disponible.
+                </p>
+                <ul class="bac-exemples" aria-label="Exemples pour la poubelle marron">
+                    <li>Vaisselle cassée</li>
+                    <li>Objets multicouches</li>
+                    <li>Déchets non recyclables</li>
+                </ul>
+                <button class="bouton-commun bouton-principal" type="button" data-open-search>
+                    Rechercher un produit
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5"></circle>
+                        <path d="m16 16 4 4"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="bac-visuel">
+                <div class="bac-halo" aria-hidden="true"></div>
+                <img
+                    src="{{ url_for('static', filename='images/bacs/bac-marron.png') }}"
+                    alt="Poubelle marron à deux roues"
+                    width="1024"
+                    height="1536"
+                    loading="lazy"
+                >
+            </div>
+        </article>
+    </div>
+
+    <div class="carousel-commandes">
+        <div class="carousel-indicateurs" aria-label="Choisir une catégorie">
+            {% for couleur, etiquette in [
+                ('jaune', 'Poubelle jaune'),
+                ('vert', 'Poubelle verte'),
+                ('bleu', 'Poubelle bleue'),
+                ('gris', 'Poubelle grise'),
+                ('marron', 'Poubelle marron')
+            ] %}
+            <button
+                class="carousel-indicateur{% if loop.first %} est-actif{% endif %}"
+                type="button"
+                data-carousel-indicateur="{{ loop.index0 }}"
+                data-couleur="{{ couleur }}"
+                aria-label="Afficher {{ etiquette|lower }}"
+                aria-current="{{ 'true' if loop.first else 'false' }}"
+            >
+                <span class="indicateur-info">{{ etiquette }}</span>
+            </button>
+            {% endfor %}
+        </div>
+
+        <button
+            class="carousel-pause"
+            type="button"
+            data-carousel-pause
+            aria-label="Mettre l’animation en pause"
+            aria-pressed="false"
+        >
+            <svg class="icone-pause" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 6v12M16 6v12"></path>
+            </svg>
+            <svg class="icone-lecture" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m9 6 9 6-9 6Z"></path>
+            </svg>
+        </button>
+    </div>
+
+    <p class="carousel-statut" aria-live="polite" aria-atomic="true" data-carousel-statut>
+        Poubelle jaune, élément 1 sur 5
+    </p>
+</section>
+
+<dialog class="recherche-dialogue" id="recherche" aria-labelledby="titre-recherche">
+    <div class="recherche-dialogue-contenu">
+        <button class="recherche-fermer" type="button" data-close-search aria-label="Fermer la recherche">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m6 6 12 12M18 6 6 18"></path>
+            </svg>
+        </button>
+        <p class="recherche-sur-titre">EcoSort Search</p>
+        <h2 id="titre-recherche">Quel produit souhaitez&#8209;vous trier&nbsp;?</h2>
+        <p>Recherchez un produit disponible sur Jumia.</p>
+
+        <form action="{{ url_for('recherche') }}" method="post" class="recherche-formulaire">
+            <label class="visuellement-cache" for="mot-cle">Nom du produit</label>
+            <div class="recherche-verre">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="11" cy="11" r="6.5"></circle>
+                    <path d="m16 16 4 4"></path>
+                </svg>
+                <input
+                    id="mot-cle"
+                    type="search"
+                    name="mot_cle"
+                    placeholder="Rechercher un produit Jumia"
+                    autocomplete="off"
+                    required
+                    data-search-input
+                >
+                <button type="submit">Rechercher</button>
+            </div>
+            <div class="recherche-suggestions" data-search-suggestions aria-label="Suggestions">
+                {% for suggestion in ['plastique', 'bouteille', 'cahier', 'smartphone'] %}
+                <button type="button" data-suggestion="{{ suggestion }}">{{ suggestion }}</button>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}

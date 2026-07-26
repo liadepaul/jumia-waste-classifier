@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Consigne de tri — EcoSort{% endblock %}
+{% block body_class %}page-verdict{% if categorie == 'incertain' %} verdict-incertain{% else %} verdict-certain{% endif %}{% endblock %}
+
+{% block content %}
+{% set images_bacs = {
+    'jaune': 'bac-jaune.png',
+    'vert': 'bac-vert.png',
+    'bleu': 'bac-bleu.png',
+    'gris': 'bac-gris.png',
+    'marron': 'bac-marron.png'
+} %}
+{% set libelles_sources = {
+    'IA': 'Intelligence artificielle',
+    'règle texte': 'Règle textuelle EcoSort',
+    'D3E': 'Détection D3E',
+    'erreur': 'Vérification impossible'
+} %}
+
+<section
+    class="verdict-experience"
+    aria-labelledby="titre-verdict"
+    style="
+        --verdict-couleur: {{ affichage.hex }};
+        --verdict-texte: {{ affichage.texte_fort_hex | default('#252825') }};
+    "
+>
+    {% if categorie != 'incertain' %}
+    <div class="verdict-aura" aria-hidden="true"></div>
+    {% endif %}
+
+    <div class="verdict-grille">
+        <article class="verdict-contenu">
+            <p class="verdict-sur-titre">
+                {% if categorie == 'incertain' %}
+                Vérification recommandée
+                {% else %}
+                Consigne de tri EcoSort
+                {% endif %}
+            </p>
+
+            <h1 id="titre-verdict">
+                {% if categorie == 'incertain' %}
+                Le verdict reste incertain
+                {% else %}
+                Direction&nbsp;: {{ affichage.bac_court }}
+                {% endif %}
+            </h1>
+
+            <p class="verdict-explication">{{ affichage.explication }}</p>
+
+            <div class="verdict-meta" aria-label="Informations sur le verdict">
+                <span class="verdict-source">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3 4.5 6.5v5.2c0 4.4 3 7.6 7.5 9.3 4.5-1.7 7.5-4.9 7.5-9.3V6.5L12 3Z"></path>
+                        <path d="m8.8 12 2.1 2.1 4.5-4.7"></path>
+                    </svg>
+                    {{ libelles_sources.get(source_verdict, source_verdict) }}
+                </span>
+
+                {% if source_verdict == 'IA' and confiance is not none %}
+                <span class="verdict-confiance">
+                    Confiance&nbsp;: {{ (confiance * 100) | round(1) }}&nbsp;%
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="verdict-actions">
+                <a class="verdict-bouton verdict-bouton-principal" href="{{ url_for('accueil') }}#recherche">
+                    Nouvelle recherche
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5"></circle>
+                        <path d="m16 16 4 4"></path>
+                    </svg>
+                </a>
+
+                {% if produit.lien %}
+                <a
+                    class="verdict-bouton verdict-bouton-jumia"
+                    href="{{ produit.lien }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Voir sur Jumia
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M14 5h5v5M19 5l-8 8"></path>
+                        <path d="M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"></path>
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </article>
+
+        <div class="verdict-visuel">
+            <article class="verdict-produit">
+                <div class="verdict-produit-image">
+                    {% if produit.image_url %}
+                    <img src="{{ produit.image_url }}" alt="{{ produit.nom }}">
+                    {% else %}
+                    <svg viewBox="0 0 64 64" aria-hidden="true">
+                        <path d="M15 18h34v31H15z"></path>
+                        <path d="m18 43 10-11 8 8 5-5 8 8M24 27a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                    </svg>
+                    {% endif %}
+                </div>
+                <div class="verdict-produit-details">
+                    <p class="verdict-produit-label">Produit analysé</p>
+                    <h2>{{ produit.nom or 'Produit Jumia' }}</h2>
+                    {% if produit.prix %}
+                    <p class="verdict-produit-prix">{{ produit.prix }}</p>
+                    {% endif %}
+                </div>
+            </article>
+
+            {% if categorie != 'incertain' %}
+            <div class="verdict-bac" aria-label="{{ affichage.bac_court }}">
+                <div class="verdict-bac-halo" aria-hidden="true"></div>
+                <img
+                    src="{{ url_for('static', filename='images/bacs/' ~ images_bacs[categorie]) }}"
+                    alt="{{ affichage.bac_court }}"
+                    width="1024"
+                    height="1536"
+                >
+            </div>
+            {% else %}
+            <div class="verdict-incertain-signal" aria-hidden="true">
+                <svg viewBox="0 0 64 64">
+                    <path d="M32 7 58 53H6L32 7Z"></path>
+                    <path d="M32 23v14M32 45h.01"></path>
+                </svg>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#444B32">
+    <title>{% block title %}EcoSort{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+    {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <a class="lien-evitement" href="#contenu-principal">Aller au contenu</a>
+
+    <div class="site-shell">
+        <header class="site-header" aria-label="Navigation principale">
+            <a class="marque-ecosort" href="{{ url_for('accueil') }}" aria-label="EcoSort, retour à l'accueil">
+                <svg class="marque-icone" viewBox="0 0 32 32" aria-hidden="true">
+                    <path d="M25.6 4.4C15.2 4.7 7.8 9.2 6.6 17.1c-.7 4.4 2.4 8.7 7.5 9.5 7.8 1.2 12.7-5.3 11.5-22.2Z"></path>
+                    <path d="M8.1 25.3c3.4-5.8 7.6-10.1 13.3-13.7" class="marque-nervure"></path>
+                </svg>
+                <span>EcoSort</span>
+            </a>
+
+            <nav class="site-nav" aria-label="Pages principales">
+                <a class="site-nav-lien" href="{{ url_for('accueil') }}">Accueil</a>
+                <a class="site-nav-lien site-nav-recherche" href="{{ url_for('accueil') }}#recherche" data-open-search>
+                    <span>Rechercher</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5"></circle>
+                        <path d="m16 16 4 4"></path>
+                    </svg>
+                </a>
+            </nav>
+        </header>
+
+        <main id="contenu-principal" class="page-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='ui.js') }}" defer></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

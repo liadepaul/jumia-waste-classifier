@@ -1,9 +1,10 @@
 import tensorflow as tf
 import numpy as np
+from pathlib import Path
 
 # Chemin vers le modele entraine (charge une seule fois a l'import du module,
 # pas a chaque appel de la fonction, pour rester performant)
-CHEMIN_MODELE = "model/modele_eco_sort.h5"
+CHEMIN_MODELE = Path(__file__).resolve().with_name("modele_eco_sort.h5")
 TAILLE_IMAGE = (224, 224)
 
 CLASSES = ["cardboard", "glass", "metal", "paper", "plastic", "trash"]
@@ -26,7 +27,11 @@ def get_modele():
     pour eviter de le recharger a chaque appel de predire_categorie()."""
     global _modele
     if _modele is None:
-        _modele = tf.keras.models.load_model(CHEMIN_MODELE)
+        if not CHEMIN_MODELE.is_file():
+            raise FileNotFoundError(
+                f"Modele EcoSort introuvable : {CHEMIN_MODELE}"
+            )
+        _modele = tf.keras.models.load_model(str(CHEMIN_MODELE))
     return _modele
 
 
@@ -50,7 +55,15 @@ def predire_categorie(chemin_image: str) -> dict:
 
     # Note : pas besoin d'appliquer preprocess_input ici, la couche
     # Rescaling est deja integree dans le modele (voir train.py)
-    predictions = modele.predict(img_array, verbose=0)[0]
+    predictions = np.asarray(modele.predict(img_array, verbose=0))
+    if predictions.shape != (1, len(CLASSES)):
+        raise ValueError(
+            "Sortie du modele invalide : "
+            f"forme {predictions.shape}, attendu (1, {len(CLASSES)})"
+        )
+    predictions = predictions[0]
+    if not np.all(np.isfinite(predictions)):
+        raise ValueError("Le modele a retourne des scores non finis.")
 
     indice_classe = int(np.argmax(predictions))
     classe_kaggle = CLASSES[indice_classe]
